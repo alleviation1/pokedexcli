@@ -1,26 +1,72 @@
 package main
 
-func cleanInput(text string) []string {
-	var cleanedText []string
+import "strings"
+import "bufio"
+import "os"
+import "fmt"
 
-	if len(text) <= 0 {
-		return cleanedText
+type cliCommand struct {
+	name        string
+	description string
+	callback    func() error
+}
+
+
+func commandExit() error {
+	fmt.Println("Closing the Pokedex... Goodbye!")
+	os.Exit(0)
+	return nil
+}
+
+func commandHelp() error {
+	fmt.Print(`
+Welcome to the Pokedex!
+Usage:
+
+help: Displays a help message
+exit: Exit the Pokedex`)
+	fmt.Println()
+	return nil
+}
+
+func startRepl() {
+	commandRegistry := map[string]cliCommand{
+		"exit": {
+			name:        "exit",
+			description: "Exit the Pokedex",
+			callback:    commandExit,
+		},
+		"help": {
+			name:        "help",
+			description: "Displays a help message",
+			callback:    commandHelp,
+		},
 	}
 
-	parsedWord := ""
+	reader := bufio.NewScanner(os.Stdin)
+	for {
+		fmt.Print("Pokedex > ")
+		reader.Scan()
 
-	for _, c := range text {
-		if c == ' ' {
-
-			if len(parsedWord) != 0 {
-				cleanedText = append(cleanedText, parsedWord)
-			}
-			parsedWord = ""
+		words := cleanInput(reader.Text())
+		if len(words) == 0 {
 			continue
 		}
 
-		parsedWord += string(c)
-	}
+		commandName := words[0]
 
-	return cleanedText
+		fmt.Printf("Your command was: %s\n", commandName)
+
+		if command, exists := commandRegistry[commandName]; exists {
+			command.callback()
+		} else {
+			fmt.Println("Unknown command")
+		}
+	}
+}
+
+func cleanInput(text string) []string {
+	output := strings.ToLower(text)
+	words := strings.Fields(output)
+	return words
 }

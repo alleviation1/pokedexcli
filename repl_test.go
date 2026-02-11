@@ -2,6 +2,7 @@ package main
 
 import "testing"
 
+
 func TestCleanInput(t *testing.T) {
 	return
 	cases := []struct {
