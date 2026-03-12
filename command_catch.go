@@ -20,13 +20,14 @@ func commandCatch(cfg *config, args ...string) error {
 		return fmt.Errorf("Error getting pokemon details in catch command: %v", err)
 	}
 
-	roll := rand.Intn(100)
-	catch_chance := 50.0 / float32(pokemon_details.BaseExperience)
-	fmt.Println(catch_chance * 100.0)
-	if float32(roll) > catch_chance {
-		fmt.Println("Caught!")
+	roll := float64(rand.Intn(99) + 1)
+	catch_chance := 100.00 - (float64(pokemon_details.BaseExperience) * 0.25)
+	fmt.Printf("roll: %v\n catch chance: %v\n", roll, catch_chance)
+	if roll + catch_chance > 100.00 {
+		fmt.Printf("%v was caught!\n", pokemon_details.Name)
+		cfg.pokedex[pokemon_details.Name] = pokemon_details
 	} else {
-		fmt.Println("Not caught!")
+		fmt.Printf("%v escaped!\n", pokemon_details.Name)
 	}
 
 	return nil
