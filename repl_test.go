@@ -17,7 +17,7 @@ func TestCleanInput(t *testing.T) {
  }
 
 	for _, c := range cases {
-		actual := cleanInput(c.input)
+		actual := CleanInput(c.input)
 		if len(actual) != len(c.expected) {
 			t.Errorf("Unequal output lengths")
 		}
@@ -32,3 +32,16 @@ func TestCleanInput(t *testing.T) {
 		}
 	}
 }
+
+// func TestStartRepl(t *testing.T) {
+// 	return
+// 	cases := []struct {
+// 		input 	 []string
+// 		expected []string
+// 	}{
+// 		{
+// 			input: 	  []string{"help", "exit"}
+// 			expected: []string{}
+// 		}
+// 	}
+// }

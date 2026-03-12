@@ -1,36 +1,30 @@
 package main
 
-import "strings"
-import "bufio"
-import "os"
-import "fmt"
+import (
+	"strings"
+	"fmt"
+	"bufio"
+	"os"
+
+	"github.com/alleviation1/pokedexcli/internal/pokeapi"
+)
+
+type config struct {
+	pokeapiClient    pokeapi.Client
+	nextLocationsURL *string
+	prevLocationsURL *string
+}
 
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(*config, ...string) error
 }
 
+func getCommands() map[string]cliCommand {
 
-func commandExit() error {
-	fmt.Println("Closing the Pokedex... Goodbye!")
-	os.Exit(0)
-	return nil
-}
 
-func commandHelp() error {
-	fmt.Print(`
-Welcome to the Pokedex!
-Usage:
-
-help: Displays a help message
-exit: Exit the Pokedex`)
-	fmt.Println()
-	return nil
-}
-
-func startRepl() {
-	commandRegistry := map[string]cliCommand{
+	return map[string]cliCommand{
 		"exit": {
 			name:        "exit",
 			description: "Exit the Pokedex",
@@ -41,31 +35,62 @@ func startRepl() {
 			description: "Displays a help message",
 			callback:    commandHelp,
 		},
+		"mapf": {
+			name:		 "mapf",
+			description: "Display 20 Pokemon map locations",
+			callback:	 commandMapf,
+		},
+		"mapb": {
+			name:		 "mapb",
+			description: "Display previous 20 Pokemon map locations",
+			callback:	 commandMapb,
+		},
+		"explore": {
+			name:		  "explore <location_name>",
+			description:  "Display all Pokemon in a location",
+			callback:	  commandExplore,
+		},
+		"catch": {
+			name:		 "catch <pokemon_name>",
+			description: "attempt to catch a pokemon",
+			callback:	 commandCatch,
+		},
 	}
+}
 
+func startRepl(config *config) {
 	reader := bufio.NewScanner(os.Stdin)
 	for {
 		fmt.Print("Pokedex > ")
 		reader.Scan()
 
-		words := cleanInput(reader.Text())
+		words := CleanInput(reader.Text())
 		if len(words) == 0 {
 			continue
 		}
 
 		commandName := words[0]
+		args := []string{}
+		if len(words) > 1 {
+			args = words[1:]
+		}
 
 		fmt.Printf("Your command was: %s\n", commandName)
 
-		if command, exists := commandRegistry[commandName]; exists {
-			command.callback()
+		command, exists := getCommands()[commandName]
+		if exists {
+			err := command.callback(config, args...); if err != nil {
+				fmt.Println(err)
+			}
+			continue
 		} else {
 			fmt.Println("Unknown command")
+			continue
 		}
 	}
 }
 
-func cleanInput(text string) []string {
+func CleanInput(text string) []string {
 	output := strings.ToLower(text)
 	words := strings.Fields(output)
 	return words
